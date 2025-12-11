@@ -2,57 +2,79 @@
 //  ContentView.swift
 //  Hackathon
 //
-//  Created by Ian. T. Dzingira on 11/12/2025.
+//  Created by Ian T. Dzingira on 11/12/2025.
 //
 
 import SwiftUI
 
+extension Color {
+    static let customOrange = Color(red: 229/255, green: 87/255, blue: 44/255)
+}
+
 struct WelcomeView: View {
-   @State private var animate: Bool = false
+    @State private var animate = false
+    @State private var settle = false
+    
     var body: some View {
-        NavigationStack{
-            VStack() {
+        NavigationStack {
+            VStack {
+                
+                
                 Image("matter")
                     .resizable()
                     .scaledToFit()
-                    .offset(y: -50)
-                //                    .scaleEffect(animate ? 1 : 0.8)
-                //                    .opacity(animate ? 1: 0)
-                //                    .animation(.easeOut(duration: 0.8), value: animate)
+                    .scaleEffect(
+                        animate
+                        ? (settle ? 1.0 : 1.03)   // subtle settle-out
+                        : 0.92                    // slow graceful scale-in
+                    )
+                    .opacity(animate ? 1 : 0)
+                    .offset(y: animate ? -45 : 0)
+                    .animation(.easeInOut(duration: 1.4), value: animate)
+                    .animation(.easeOut(duration: 0.6), value: settle)
+                
                 Text("Matter Hub")
+                    .font(.largeTitle.bold())
                     .foregroundColor(.black)
-                    .offset(y: -100)
-                    .font(Font.largeTitle.bold())
+                    .opacity(animate ? 1 : 0)
+                    .offset(y: animate ? -100 : -20)
+                    .animation(.easeInOut(duration: 1.2).delay(0.4), value: animate)
                 
                 Text("See what matters instantly and connect with others.")
                     .font(.headline)
-                    .fontWeight(.bold)
                     .foregroundColor(.secondary)
-                    .offset(y: -70)
-                    .font(.system(size: 25, weight:.thin))
                     .italic()
                     .multilineTextAlignment(.center)
                     .padding(.top)
-                NavigationLink{
-                }label: {
-                    ZStack{
-                        
-                        RoundedRectangle(cornerRadius: 6.0)
-                            .frame(width: 200, height: 50)
-                            .foregroundStyle(Color.orange)
-                            .cornerRadius(25)
-                            .padding()
-                        
-                        Text("Get Started")
-                            .padding()
-                            .foregroundColor(.white)
-                            
-                    }
-                    .padding(.top)
+                    .opacity(animate ? 1 : 0)
+                    .offset(y: animate ? -70 : 10)
+                    .animation(.easeInOut(duration: 1.2).delay(0.6), value: animate)
+                
+                NavigationLink {
+                    
+                } label: {
+                    RoundedRectangle(cornerRadius: 25)
+                        .frame(width: 200, height: 50)
+                        .foregroundStyle(Color.customOrange)
+                        .overlay(
+                            Text("Get Started")
+                                .bold()
+                                .foregroundColor(.white)
+                        )
                 }
-                .padding(.top)
+                .opacity(animate ? 1 : 0)
+                .offset(y: animate ? 0 : 40)
+                .animation(.easeInOut(duration: 1.2).delay(0.8), value: animate)
+                
             }
             .padding(20)
+            .onAppear {
+                animate = true
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                    settle = true
+                }
+            }
         }
     }
 }
@@ -60,3 +82,12 @@ struct WelcomeView: View {
 #Preview {
     WelcomeView()
 }
+
+
+
+
+
+
+
+
+
