@@ -7,16 +7,36 @@
 
 import Foundation
 
+struct APIErrorResponse: Codable {
+    let error: String
+}
+
 struct AuthResponse: Codable {
     let message: String
     let email: String
+    let role: Role
 }
-
 
 class AuthService {
     private let baseURL = URL(string: "http://localhost:3001")!
     
+    private func handleAPIError(data: Data, response: URLResponse) throws -> Never {
+        let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 500
+        
+        // 1. Try to decode a structured error response from the server body
+        if let errorResponse = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+            throw NSError(domain: "AuthError", code: statusCode, userInfo: [NSLocalizedDescriptionKey: errorResponse.error])
+        }
+        
+        // 2. Fallback to a generic error if decoding failed
+        throw NSError(domain: "AuthError", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "Authentication failed with status code: \(statusCode)"])
+    }
+    
     func signUp(user: User) async throws -> AuthResponse {
+        guard user.role != nil else {
+            throw NSError(domain: "ClientError", code: 400, userInfo: [NSLocalizedDescriptionKey: "Role selection is required for sign up."])
+        }
+        
         let url = baseURL.appendingPathComponent("auth/signup")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -28,8 +48,7 @@ class AuthService {
         
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 500
-            throw NSError(domain: "AuthError", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "Sign up failed with status code: \(statusCode)"])
+            try handleAPIError(data: data, response: response)
         }
         
         return try JSONDecoder().decode(AuthResponse.self, from: data)
@@ -47,8 +66,8 @@ class AuthService {
         
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 500
-            throw NSError(domain: "AuthError", code: statusCode, userInfo: [NSLocalizedDescriptionKey: "Sign in failed with status code: \(statusCode)"])
+            // Use improved error handling for detailed feedback
+            try handleAPIError(data: data, response: response)
         }
         
         return try JSONDecoder().decode(AuthResponse.self, from: data)
