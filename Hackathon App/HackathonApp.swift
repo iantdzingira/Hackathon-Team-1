@@ -1,6 +1,6 @@
 //
-//  Hackathon_AppApp.swift
-//  Hackathon App
+//  HackathonApp.swift
+//  Hackathon
 //
 //  Created by Ian. T. Dzingira on 11/12/2025.
 //
@@ -8,10 +8,10 @@
 import SwiftUI
 
 @main
-struct Hackathon_AppApp: App {
+struct HackathonApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            WelcomeView()
         }
     }
 }

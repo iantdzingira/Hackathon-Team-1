@@ -1,13 +1,13 @@
 //
 //  ContentView.swift
-//  Hackathon App
+//  Hackathon
 //
 //  Created by Ian. T. Dzingira on 11/12/2025.
 //
 
 import SwiftUI
 
-struct ContentView: View {
+struct WelcomeView: View {
     var body: some View {
         VStack {
             Image(systemName: "globe")
@@ -20,5 +20,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    WelcomeView()
 }
