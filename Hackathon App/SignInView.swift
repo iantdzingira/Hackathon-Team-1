@@ -12,7 +12,7 @@ struct RootView: View {
     var body: some View {
         Group {
             if isAuthenticated {
-                HomeView()
+                RoleRouterView(user: User(email: "", password: "", role: .facilitator))
             } else {
                 SignInView(isAuthenticated: $isAuthenticated)
             }

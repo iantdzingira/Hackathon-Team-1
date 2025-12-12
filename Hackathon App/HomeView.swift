@@ -4,15 +4,36 @@
 //
 //  Created by Ian. T. Dzingira on 11/12/2025.
 //
-
 import SwiftUI
 
-struct HomeView: View {
+struct RoleRouterView: View {
+    let user: User
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            content
+        }
     }
-}
-
-#Preview {
-    HomeView()
+    
+    @ViewBuilder
+    var content: some View {
+        switch user.role {
+        case .student:
+            StudentsDashboard()
+        case .manager:
+            ManagersDashboard()
+        case .projectManager:
+            ProjectManagerView()
+        case .donor:
+            DonorSnapshot()
+        case .facilitator:
+            FacilitatorsDashboard()
+        case .intern:
+            InternsDashboard()
+        case .hiringCompany:
+            HiringCompaniesDashboard()
+        case .none:
+            Text("No role assigned.")
+        }
+    }
 }

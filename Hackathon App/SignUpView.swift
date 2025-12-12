@@ -225,7 +225,6 @@ struct SignUpView: View {
         }
     }
 }
-
 // Role Selection Sheet
 struct RoleSelectionSheet: View {
     @Binding var selectedRole: String

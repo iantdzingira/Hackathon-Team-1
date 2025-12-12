@@ -4,7 +4,7 @@
 //
 //  Created by Ian. T. Dzingira on 11/12/2025.
 //
-
+import Combine
 import Foundation
 
 struct APIErrorResponse: Codable {
@@ -17,7 +17,7 @@ struct AuthResponse: Codable {
     let role: Role
 }
 
-class AuthService {
+class AuthService: ObservableObject {
     private let baseURL = URL(string: "http://localhost:3001")!
     
     private func handleAPIError(data: Data, response: URLResponse) throws -> Never {
