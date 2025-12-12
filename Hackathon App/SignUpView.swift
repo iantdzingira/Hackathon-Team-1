@@ -169,13 +169,13 @@ struct SignUpView: View {
                         .frame(height: 56)
                         .background(
                             LinearGradient(
-                                colors: [.orange, Color.orange.opacity(0.8)],
+                                colors: [.customOrange, Color.customOrange.opacity(0.8)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
                         .clipShape(Capsule())
-                        .shadow(color: .orange.opacity(0.3), radius: 8, y: 4)
+                        .shadow(color: .customOrange.opacity(0.3), radius: 8, y: 4)
                     }
                 }
                 .padding(.horizontal, 24)

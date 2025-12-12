@@ -61,170 +61,75 @@ struct User: Codable, Identifiable {
     }
 }
 
-//
-
-enum UpdateType: String, CaseIterable, Identifiable {
-    case progress = "Progress Update"
-    case blocker = "Blocker/Issue"
-    case milestone = "Completed Milestone"
-    case studentNote = "Student Performance Note"
-    case requestHelp = "Request for Help"
-    var id: String { self.rawValue }
-}
-
-enum Priority: String, CaseIterable, Identifiable {
-    case low = "Low"
-    case medium = "Medium"
-    case high = "High"
-    case urgent = "Urgent"
-    var id: String { self.rawValue }
-}
-
-// MARK: - Form Data Model
-
-struct UpdateData {
-    var type: UpdateType = .progress
-    var priority: Priority = .medium
-    var category: String = "General"
-    var description: String = ""
-    var impactScore: Int = 1
-    var optionalDueDate: Date = Calendar.current.date(byAdding: .day, value: 7, to: Date())!
-    var hasDueDate: Bool = false
-}
-
-
-struct ProjectUpdate: Identifiable {
-    let id = UUID()
-    let type: UpdateType
-    let priority: Priority
-    let category: String
-    let description: String
-    let submitter: String
-    let date: Date
-    let project: String
-}
-
-// MARK: - Data Source (For Hackathon Simplicity)
-
-class UpdatesFeedViewModel: ObservableObject {
-    @Published var updates: [ProjectUpdate] = []
-    @Published var selectedFilter: UpdateType? = nil // Nil means show all
-    @Published var searchText: String = ""
-    
-    init() {
-        self.updates = MockData.sampleUpdates.sorted(by: { $0.date > $1.date }) // Sort newest first
-    }
-    
-    var filteredUpdates: [ProjectUpdate] {
-        updates.filter { update in
-            let matchesFilter = selectedFilter == nil || update.type == selectedFilter
-            let matchesSearch = searchText.isEmpty ||
-                update.description.localizedCaseInsensitiveContains(searchText) ||
-                update.submitter.localizedCaseInsensitiveContains(searchText) ||
-                update.category.localizedCaseInsensitiveContains(searchText) ||
-                update.project.localizedCaseInsensitiveContains(searchText)
-            
-            return matchesFilter && matchesSearch
-        }
-    }
-}
-
-// MARK: - Mock Data
-
-struct MockData {
-    static let sampleUpdates: [ProjectUpdate] = [
-        ProjectUpdate(type: .blocker, priority: .urgent, category: "Technical", description: "Zim server deployment failed due to missing Docker image dependency.", submitter: "Langa Dube (PM)", date: Date().addingTimeInterval(-3600), project: "MCRI 2.0"),
-        ProjectUpdate(type: .milestone, priority: .medium, category: "Curriculum", description: "Module 3: Swift Fundamentals completed by 95% of students.", submitter: "Sipho Nyathi (Facilitator)", date: Date().addingTimeInterval(-10800), project: "MCRI 2.0"),
-        ProjectUpdate(type: .requestHelp, priority: .high, category: "Hiring", description: "Need US Manager review on the new Intern placement criteria for TechCorp.", submitter: "Jane Doe (Manager)", date: Date().addingTimeInterval(-86400), project: "Global Ops"),
-        ProjectUpdate(type: .progress, priority: .low, category: "General", description: "Weekly sync meeting concluded. All teams are green for next week.", submitter: "Zim Manager", date: Date().addingTimeInterval(-172800), project: "MCRI 2.0"),
-        ProjectUpdate(type: .studentNote, priority: .medium, category: "Performance", description: "Student M. Moyo showed significant improvement in debugging logic this week.", submitter: "Facilitator A", date: Date().addingTimeInterval(-259200), project: "MCRI 2.0"),
-    ]
-}
-
-class MasterPMViewModel: ObservableObject {
-    @Published var allUpdates: [ProjectUpdate] = MockData.sampleUpdates // Inherit all updates
-    @Published var selectedProjectFilter: String? = nil // Global project filter
-    @Published var urgencyFilter: Priority? = .urgent // Default focus on urgent issues
-    
-    // Computed property 1: Auto-Generated "Needs Attention" List
-    var needsAttentionUpdates: [ProjectUpdate] {
-        allUpdates
-            .filter { update in
-                // A blocker or a high/urgent request that hasn.t been addressed
-                return update.type == .blocker || update.priority == .urgent || update.priority == .high
-            }
-            .sorted(by: { $0.priority.rawValue > $1.priority.rawValue }) // Urgent first
-    }
-    
-    // Computed property 2: Filtered List for General Reporting (based on selected filters)
-    var filteredUpdates: [ProjectUpdate] {
-        allUpdates.filter { update in
-            let projectMatches = selectedProjectFilter == nil || update.project == selectedProjectFilter
-            let urgencyMatches = urgencyFilter == nil || update.priority == urgencyFilter
-            
-            return projectMatches && urgencyMatches
-        }
-    }
-    
-    // For the filter picker
-    var uniqueProjects: [String] {
-        var projects = Set(allUpdates.map { $0.project })
-        return Array(projects).sorted()
-    }
-    
-    // Placeholder for a detailed project health summary
-    var globalProjectHealth: [(name: String, blockers: Int, completion: Double)] {
-        return [
-            ("MCRI 2.0", blockers: 1, completion: 0.85),
-            ("Global Ops", blockers: 0, completion: 0.95),
-            ("Zim Hiring Q4", blockers: 3, completion: 0.50)
-        ]
-    }
-}
-
-struct StudentTalent: Identifiable {
+struct Project: Identifiable {
     let id = UUID()
     let name: String
-    let cohort: String
-    var skillScore: Int // 1-5 rating, e.g., Technical Proficiency
-    var attendance: Double // 0.0 - 1.0
-    var internshipStatus: InternshipStatus
-    var facilitatorNotes: [String]
-    var isInterviewReady: Bool // Computed status based on score/attendance
+    let status: ProjectStatus
+    let progress: Double
+    let teamSize: Int
 }
 
-enum InternshipStatus: String, CaseIterable, Identifiable {
-    case available = "Available"
-    case pendingInterview = "Pending Interview"
-    case placed = "Placed (In Progress)"
-    case completed = "Completed"
-    var id: String { self.rawValue }
-}
-
-// MARK: - Mock Data for Pipeline
-
-extension StudentTalent {
-    static let mockStudents: [StudentTalent] = [
-        StudentTalent(name: "Aisha M", cohort: "C2025-Zim", skillScore: 5, attendance: 0.98, internshipStatus: .available, facilitatorNotes: ["Exceptional Swift knowledge.", "Strong independent debugger."], isInterviewReady: true),
-        StudentTalent(name: "Brian K", cohort: "C2025-Zim", skillScore: 4, attendance: 0.90, internshipStatus: .pendingInterview, facilitatorNotes: ["Needs slight polish on communication.", "Met all Module 4 milestones."], isInterviewReady: true),
-        StudentTalent(name: "Chloe V", cohort: "C2024-US", skillScore: 3, attendance: 0.85, internshipStatus: .placed, facilitatorNotes: ["Requires support in project planning.", "Attendance flagged twice."], isInterviewReady: false),
-        StudentTalent(name: "David N", cohort: "C2025-Zim", skillScore: 5, attendance: 1.0, internshipStatus: .completed, facilitatorNotes: ["Top performer. Highly recommended."], isInterviewReady: true)
-    ]
-}
-
-// MARK: - View Model
-
-class TalentPipelineViewModel: ObservableObject {
-    @Published var students: [StudentTalent] = StudentTalent.mockStudents
-    @Published var selectedStatusFilter: InternshipStatus? = .available
-    @Published var minSkillScore: Double = 3.0
+enum ProjectStatus: String {
+    case green = "On Track"
+    case yellow = "At Risk"
+    case red = "Late"
     
-    var filteredStudents: [StudentTalent] {
-        students.filter { student in
-            let statusMatches = selectedStatusFilter == nil || student.internshipStatus == selectedStatusFilter
-            let skillMatches = student.skillScore >= Int(minSkillScore)
-            return statusMatches && skillMatches
+    var color: Color {
+        switch self {
+        case .green: return .green
+        case .yellow: return .orange
+        case .red: return .red
         }
-        .sorted { $0.skillScore > $1.skillScore }
     }
 }
+
+struct Milestone: Identifiable {
+    let id = UUID()
+    let name: String
+    let dueDate: Date
+    let status: ProjectStatus
+}
+
+struct Kpi: Identifiable {
+    let id = UUID()
+    let name: String
+    let value: Double
+    let target: Double
+    let unit: String
+}
+
+struct StakeholderNote: Identifiable {
+    let id = UUID()
+    let author: String
+    let content: String
+    let date: Date
+}
+
+let sampleProjects: [Project] = [
+    Project(name: "Internal Data API v2", status: .green, progress: 0.75, teamSize: 5),
+    Project(name: "MCRI Website Redesign", status: .yellow, progress: 0.50, teamSize: 3),
+    Project(name: "Patient Portal Login Fix", status: .red, progress: 0.20, teamSize: 1),
+    Project(name: "Hiring Pipeline Dashboard", status: .green, progress: 0.90, teamSize: 2),
+    Project(name: "Mobile App Testing", status: .yellow, progress: 0.85, teamSize: 4),
+    Project(name: "Server Migration Prep", status: .green, progress: 1.00, teamSize: 2)
+]
+
+let sampleTasks = [2, 22, 51, 30, 15, 8]
+
+let sampleMilestones: [Milestone] = [
+    Milestone(name: "Elevator Installation", dueDate: Calendar.current.date(byAdding: .day, value: -7, to: Date())!, status: .green),
+    Milestone(name: "Hackathon Finishing", dueDate: Date(), status: .yellow),
+    Milestone(name: "Swift Updates", dueDate: Calendar.current.date(byAdding: .day, value: 14, to: Date())!, status: .red),
+    Milestone(name: "Sign Language App Final Deployment", dueDate: Calendar.current.date(byAdding: .day, value: 30, to: Date())!, status: .red)
+]
+
+let sampleKpis: [Kpi] = [
+    Kpi(name: "Open Critical Issues", value: 3.0, target: 1.0, unit: "Issues"),
+    Kpi(name: "Test Coverage", value: 0.65, target: 0.80, unit: "%"),
+    Kpi(name: "Team Velocity", value: 18.0, target: 20.0, unit: "Points")
+]
+
+let sampleNotes: [StakeholderNote] = [
+    StakeholderNote(author: "Dr. Smith (Sponsor)", content: "Concerned about the dependency on the IT team for server access. This is a critical path risk.", date: Calendar.current.date(byAdding: .hour, value: -2, to: Date())!),
+    StakeholderNote(author: "Lead Developer", content: "Architecture review passed successfully. Starting sprint 2 planning.", date: Calendar.current.date(byAdding: .hour, value: -1, to: Date())!)
+]

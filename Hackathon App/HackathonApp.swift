@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct HackathonApp: App {
+    @AppStorage("isDarkMode") var isDarkMode: Bool = false
+    @AppStorage("appLanguageCode") var appLanguageCode: String = "en"
     var body: some Scene {
         WindowGroup {
-            WelcomeView()
+           WelcomeView()
+                .preferredColorScheme(isDarkMode ? .dark : .light)
+                .environment(\.locale, .init(identifier: appLanguageCode))
         }
     }
 }

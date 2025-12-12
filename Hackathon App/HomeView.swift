@@ -23,7 +23,7 @@ struct RoleRouterView: View {
         case .manager:
             ManagersDashboard()
         case .projectManager:
-            ProjectManagerView()
+            ProjectsView()
         case .donor:
             DonorSnapshot()
         case .facilitator:
