@@ -1,12 +1,4 @@
 //
-//  Priority.swift
-//  Hackathon App
-//
-//  Created by Ian. T. Dzingira on 12/12/2025.
-//
-
-
-//
 //  StudentTasks.swift
 //  Hackathon App
 //
@@ -15,27 +7,6 @@
 
 import SwiftUI
 import Combine
-
-// MARK: Data Structures
-enum Priority: String, CaseIterable {
-    case high = "High"
-    case medium = "Medium"
-    case low = "Low"
-}
-
-// Task Model
-struct StudentTask: Identifiable {
-    let id = UUID()
-    var name: String
-    var submissionTime: Date
-    var isCompleted: Bool = false
-    var priority: Priority
-}
-
-// MARK: Theme Color Extension
-extension Color {
-    static let themeOrange = Color.orange
-}
 
 // MARK:  Main Dashboard View
 struct StudentTaskDashboardView: View {
@@ -116,7 +87,6 @@ struct StudentTaskDashboardView: View {
     }
 }
 
-// MARK:  Metric Card Component
 struct MetricCard: View {
     let title: String
     let value: Int
@@ -143,7 +113,6 @@ struct MetricCard: View {
     }
 }
 
-// MARK:  Task Row Component
 struct TaskRow: View {
     @Binding var task: StudentTask
     @State private var timeRemaining: String = ""
@@ -226,7 +195,6 @@ struct TaskRow: View {
     }
 }
 
-// MARK:  Add Task Sheet View
 struct AddTaskSheetView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var tasks: [StudentTask]

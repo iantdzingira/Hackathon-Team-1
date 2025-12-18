@@ -50,7 +50,6 @@ struct PartnersView: View {
                 }
                 .padding()
                 
-                // Partners Grid
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         ForEach(partners) { partner in
